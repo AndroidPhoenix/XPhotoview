@@ -259,7 +259,7 @@ public class PhotoViewAttacher implements IViewAttacher{
         /** 以 view 宽/长比例和 image 宽/长比例做比较
          *  iW/iH < vW/vH : 左右留空，取高比值
          *  iW/iH > vW/vH : 上下留空，取宽比值 */
-        float ratio = (imgWidth/imgHeight < viewWidth/viewHeight) ? (imgHeight * 1.0f / viewHeight) : (imgWidth * 1.0f / viewWidth);
+        float ratio = (imgWidth*1.0f/imgHeight < viewWidth*1.0f/viewHeight) ? (imgHeight * 1.0f / viewHeight) : (imgWidth * 1.0f / viewWidth);
         //取消设置ratio最小值，初始化以最大适配view计算ratio
 //        ratio = ratio < 1 ? 1f : ratio;
 
