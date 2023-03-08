@@ -2,20 +2,18 @@
 
 不少安卓开发者都有图片加载的处理经验，比如通过压缩节省图片加载中对内存的消耗。
 我们经常做的是把一张1280之类大小的图片以适应屏幕大小的尺寸展现出来，同时能够通过缩放来观察。
-不过这是一般水平，通过压缩来处理的话通常会导致在最大尺寸放大后看不清细节，比如拿到一张苍老师...哦不，拿到一张清明上河图，或者一张世界地图，这个时候我们要保证在最大限度的放大后仍然能够看清楚每个人物每个城市，一般的压缩的方案就不合适了。
+不过这是一般水平，通过压缩来处理的话通常会导致在最大尺寸放大后看不清细节，比如拿到一张清明上河图，或者一张世界地图，这个时候我们要保证在最大限度的放大后仍然能够看清楚每个人物每个城市，一般的压缩的方案就不合适了。
 
 这里我们要讨论的是如何用局部解析(BitmapRegionDecoder)来做到在不占用过多内存的情况下实现超大图的缩放。
-
-惯例贴源码：[XPhotoView Demo](https://github.com/AndroidPhoenix/XPhotoView)
 
 XPhotoView继承ImageView实现了超大图加载，Demo中演示了如何在Pager加载静态图片和动图，同时也支持各种手势操作。
 我在公司的产品上自定义了XPhotoView，在包括聊天列表，动图播放，还有高清大图查看的功能上已经验证了它的稳定和高效，平时的开发中可以直接使用。
 
 ### 超大图片加载和局部解析
-对于普通的图片，我们加载的思路很简单就是压缩大小，用Options来获得大小然后和当前屏幕大小进行比较，然后以一定的值压缩。但是这样带来的问题是，压缩后的图片会丢失细节，如果是小泽...呸，如果是清明上河图压缩到屏幕大小，放大后怕是人都看不见。而整张图片加载肯定是行不通的，内存绝对立马爆。
+对于普通的图片，我们加载的思路很简单就是压缩大小，用Options来获得大小然后和当前屏幕大小进行比较，然后以一定的值压缩。但是这样带来的问题是，压缩后的图片会丢失细节，并且分辨率不足以满足放大查看。
 解决方案很简单，我们只加载图片的局部区域，这部分区域适配屏幕大小，配合手势移动的时候更新显示对应的区域就可以了。
 Android提供了[BitmapRegionDecoder](https://developer.android.com/reference/android/graphics/BitmapRegionDecoder.html)来进行图片的局部解析，这是XPhotoView的主要思路。
-剩下的就是如何高效的加载的问题了，如何设计代码逻辑，让它能够快速的响应手势动作呢。
+剩下的就是如何高效的加载的问题了，如何设计代码逻辑，能够快速的响应手势动作。
 
 ### 局部解析的代码逻辑
 
@@ -31,7 +29,7 @@ XPhotoView的代码概要如下所示，
 Attacher本身只负责图片的拆分解析和渲染过程，同时Bitmap也是保存在Attacher中。Attacher和XPhotoView之间通过Interface互相调用，以此隔离。
 
 #### Attacher 的解析过程
-我们暂时忽略Gif的部分，先描述一下Attacher的思路。
+Attacher的思路。
 Attacher有一个内部子类BitmapUnit和BitmapGridStrategy，初始图片会被BitmapRegionDecoder切割为 N*M 的网格，然后存储在BitmapUnit[N][M]二维数组 mGrids 中。
 
 ![image.png](http://upload-images.jianshu.io/upload_images/4691622-e8f259fdb4de0c3a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
